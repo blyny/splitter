@@ -867,19 +867,19 @@
   <div class="names-bar">
     <div class="name-edit">
       <div class="name-edit__dot name-edit__dot--you"></div>
-      <input class="name-edit__input name-edit__input--you" type="text" id="nameYou" value="You" maxlength="16" spellcheck="false">
+      <input class="name-edit__input name-edit__input--you" type="text" id="nameYou" value="b" maxlength="16" spellcheck="false" readonly>
     </div>
     <span class="names-bar__ampersand">&amp;</span>
     <div class="name-edit">
       <div class="name-edit__dot name-edit__dot--them"></div>
-      <input class="name-edit__input name-edit__input--them" type="text" id="nameThem" value="Partner" maxlength="16" spellcheck="false">
+      <input class="name-edit__input name-edit__input--them" type="text" id="nameThem" value="t" maxlength="16" spellcheck="false" readonly>
     </div>
   </div>
 
   <!-- Overview Strip -->
   <div class="overview">
     <div class="overview__side overview__side--you">
-      <div class="overview__label" id="overviewLabelYou">You spent</div>
+      <div class="overview__label" id="overviewLabelYou">b spent</div>
       <div class="overview__amount overview__amount--you" id="overviewAmountYou">$0.00</div>
       <div class="overview__count" id="overviewCountYou">0 expenses</div>
     </div>
@@ -888,7 +888,7 @@
       <div class="overview__total-amount" id="overviewTotal">$0</div>
     </div>
     <div class="overview__side overview__side--them">
-      <div class="overview__label" id="overviewLabelThem">Partner spent</div>
+      <div class="overview__label" id="overviewLabelThem">t spent</div>
       <div class="overview__amount overview__amount--them" id="overviewAmountThem">$0.00</div>
       <div class="overview__count" id="overviewCountThem">0 expenses</div>
     </div>
@@ -899,8 +899,8 @@
     <!-- You panel -->
     <div class="panel panel--you">
       <div class="panel__header">
-        <div class="panel__icon" id="panelIconYou">Y</div>
-        <div class="panel__name" id="panelNameYou">You</div>
+        <div class="panel__icon" id="panelIconYou">B</div>
+        <div class="panel__name" id="panelNameYou">b</div>
       </div>
       <div class="panel__body">
         <form class="add-form" id="formYou" autocomplete="off">
@@ -928,8 +928,8 @@
     <!-- Them panel -->
     <div class="panel panel--them">
       <div class="panel__header">
-        <div class="panel__icon" id="panelIconThem">P</div>
-        <div class="panel__name" id="panelNameThem">Partner</div>
+        <div class="panel__icon" id="panelIconThem">T</div>
+        <div class="panel__name" id="panelNameThem">t</div>
       </div>
       <div class="panel__body">
         <form class="add-form" id="formThem" autocomplete="off">
@@ -985,7 +985,7 @@
       <div class="settlement__result" id="settlementResult">Add some expenses to see the split</div>
       <div class="settlement__breakdown" id="settlementBreakdown" style="display:none">
         <div class="settlement__detail">
-          <span class="settlement__detail-label" id="breakdownLabelYou">You owe</span>
+          <span class="settlement__detail-label" id="breakdownLabelYou">b's share</span>
           <span class="settlement__detail-value" id="breakdownValYou">$0.00</span>
         </div>
         <div class="settlement__detail">
@@ -993,7 +993,7 @@
           <span class="settlement__detail-value" id="breakdownTotal">$0.00</span>
         </div>
         <div class="settlement__detail">
-          <span class="settlement__detail-label" id="breakdownLabelThem">Partner owes</span>
+          <span class="settlement__detail-label" id="breakdownLabelThem">t's share</span>
           <span class="settlement__detail-value" id="breakdownValThem">$0.00</span>
         </div>
       </div>
@@ -1006,8 +1006,8 @@
       <h2 class="log-header__title">Expense Log</h2>
       <div class="log-header__actions">
         <button class="log-btn" id="filterAll">All</button>
-        <button class="log-btn" id="filterYou">You</button>
-        <button class="log-btn" id="filterThem">Partner</button>
+          <button class="log-btn" id="filterYou">b</button>
+          <button class="log-btn" id="filterThem">t</button>
         <button class="log-btn log-btn--danger" id="clearAll">Clear All</button>
       </div>
     </div>
@@ -1030,13 +1030,15 @@
 
   // ─── State ─────────────────────────────────────────
   const STORAGE_KEY = 'halves_data';
+  const FIXED_NAME_YOU = 'b';
+  const FIXED_NAME_THEM = 't';
 
   let state = loadState();
 
   function defaultState() {
     return {
-      nameYou: 'You',
-      nameThem: 'Partner',
+      nameYou: FIXED_NAME_YOU,
+      nameThem: FIXED_NAME_THEM,
       splitPct: 50,
       expenses: [],
       filter: 'all'
@@ -1048,7 +1050,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return { ...defaultState(), ...parsed };
+        return { ...defaultState(), ...parsed, nameYou: FIXED_NAME_YOU, nameThem: FIXED_NAME_THEM };
       }
     } catch(e) {}
     return defaultState();
@@ -1079,19 +1081,6 @@
   nameYouInput.value = state.nameYou;
   nameThemInput.value = state.nameThem;
   splitSlider.value = state.splitPct;
-
-  // ─── Name changes ─────────────────────────────────
-  nameYouInput.addEventListener('input', () => {
-    state.nameYou = nameYouInput.value.trim() || 'You';
-    saveState();
-    render();
-  });
-
-  nameThemInput.addEventListener('input', () => {
-    state.nameThem = nameThemInput.value.trim() || 'Partner';
-    saveState();
-    render();
-  });
 
   // ─── Add expenses ─────────────────────────────────
   formYou.addEventListener('submit', (e) => {
@@ -1198,8 +1187,8 @@
 
   // ─── Render ───────────────────────────────────────
   function render() {
-    const ny = state.nameYou || 'You';
-    const nt = state.nameThem || 'Partner';
+    const ny = state.nameYou || FIXED_NAME_YOU;
+    const nt = state.nameThem || FIXED_NAME_THEM;
     const pct = state.splitPct;
     const pctThem = 100 - pct;
 

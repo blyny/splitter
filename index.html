@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halves — Couple's Expense Splitter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --paper: #F5F0EA;
+    --paper-deep: #EDE6DC;
+    --ink: #1A1715;
+    --ink-soft: #5C554D;
+    --ink-faint: #A69E94;
+    --border: #D4C9BB;
+    --border-light: #E8DFD4;
+
+    --you-primary: #B5432A;
+    --you-soft: #F2DDD7;
+    --you-glow: #FCEAE5;
+    --you-deep: #8C2F1A;
+
+    --them-primary: #1B6B50;
+    --them-soft: #D3E8DF;
+    --them-glow: #E4F2EC;
+    --them-deep: #0E4A35;
+
+    --gold: #C9A84C;
+    --gold-soft: #F5ECD4;
+
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --font-body: 'Outfit', system-ui, sans-serif;
+
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(26,23,21,0.06), 0 1px 2px rgba(26,23,21,0.04);
+    --shadow-md: 0 4px 12px rgba(26,23,21,0.08), 0 2px 4px rgba(26,23,21,0.04);
+    --shadow-lg: 0 12px 40px rgba(26,23,21,0.12), 0 4px 12px rgba(26,23,21,0.06);
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle paper texture via pseudo-element */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ═══════════ HEADER ═══════════ */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-light);
+    animation: fadeInDown 0.6s ease-out;
+  }
+
+  .header__brand {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .header__brand span {
+    display: inline-block;
+    position: relative;
+  }
+  .header__brand span::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--you-primary), var(--them-primary));
+    border-radius: 2px;
+  }
+
+  .header__sub {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 0.5rem;
+  }
+
+  /* ═══════════ NAMES EDITOR ═══════════ */
+  .names-bar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2rem;
+    animation: fadeInDown 0.6s ease-out 0.1s both;
+  }
+
+  .name-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .name-edit__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .name-edit__dot--you { background: var(--you-primary); }
+  .name-edit__dot--them { background: var(--them-primary); }
+
+  .name-edit__input {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    background: none;
+    border: none;
+    border-bottom: 1.5px dashed var(--border);
+    padding: 0.15rem 0.25rem;
+    color: var(--ink);
+    outline: none;
+    width: 120px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .name-edit__input:focus {
+    border-bottom-style: solid;
+  }
+  .name-edit__input--you:focus { border-color: var(--you-primary); }
+  .name-edit__input--them:focus { border-color: var(--them-primary); }
+
+  .names-bar__ampersand {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--ink-faint);
+  }
+
+  /* ═══════════ OVERVIEW STRIP ═══════════ */
+  .overview {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    margin-bottom: 2.5rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease-out 0.2s both;
+  }
+
+  .overview__side {
+    padding: 1.5rem 2rem;
+    text-align: center;
+  }
+
+  .overview__side--you {
+    background: linear-gradient(135deg, var(--you-glow) 0%, white 100%);
+    border-right: 1px solid var(--border-light);
+  }
+  .overview__side--them {
+    background: linear-gradient(225deg, var(--them-glow) 0%, white 100%);
+    border-left: 1px solid var(--border-light);
+  }
+
+  .overview__label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  .overview__amount {
+    font-family: var(--font-mono);
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .overview__amount--you { color: var(--you-primary); }
+  .overview__amount--them { color: var(--them-primary); }
+
+  .overview__count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    margin-top: 0.25rem;
+  }
+
+  .overview__center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+    background: var(--paper);
+    position: relative;
+  }
+  .overview__center::before,
+  .overview__center::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 1px;
+    background: var(--border);
+  }
+  .overview__center::before { left: -10px; }
+  .overview__center::after { right: -10px; }
+
+  .overview__total-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.25rem;
+  }
+  .overview__total-amount {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  /* ═══════════ DUAL PANELS ═══════════ */
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .panel {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+    animation: fadeInUp 0.5s ease-out both;
+  }
+  .panel--you { animation-delay: 0.3s; }
+  .panel--them { animation-delay: 0.4s; }
+
+  .panel:hover { box-shadow: var(--shadow-md); }
+
+  .panel__header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .panel--you .panel__header { background: var(--you-glow); }
+  .panel--them .panel__header { background: var(--them-glow); }
+
+  .panel__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .panel--you .panel__icon { background: var(--you-primary); }
+  .panel--them .panel__icon { background: var(--them-primary); }
+
+  .panel__name {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+
+  .panel__body { padding: 1.25rem 1.5rem; }
+
+  /* Add expense form */
+  .add-form { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .add-form__row { display: flex; gap: 0.75rem; }
+
+  .field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .field__label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .field__input {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field__input::placeholder { color: var(--ink-faint); }
+  .panel--you .field__input:focus {
+    border-color: var(--you-primary);
+    box-shadow: 0 0 0 3px var(--you-soft);
+  }
+  .panel--them .field__input:focus {
+    border-color: var(--them-primary);
+    box-shadow: 0 0 0 3px var(--them-soft);
+  }
+
+  .field__input--amount {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    width: 120px;
+    flex: none;
+  }
+
+  .add-form__btn {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .add-form__btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .add-form__btn:active { transform: translateY(0); }
+
+  .panel--you .add-form__btn { background: var(--you-primary); }
+  .panel--them .add-form__btn { background: var(--them-primary); }
+
+  /* Recent in panel */
+  .panel-recent { margin-top: 1.25rem; border-top: 1px solid var(--border-light); padding-top: 1rem; }
+
+  .panel-recent__title {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  .panel-recent__list { list-style: none; }
+
+  .panel-recent__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+    animation: slideIn 0.3s ease-out;
+  }
+  .panel-recent__item:last-child { border-bottom: none; }
+
+  .panel-recent__desc {
+    font-size: 0.85rem;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .panel-recent__amt {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: 1rem;
+    flex-shrink: 0;
+  }
+  .panel--you .panel-recent__amt { color: var(--you-primary); }
+  .panel--them .panel-recent__amt { color: var(--them-primary); }
+
+  .panel-recent__del {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    padding: 0.2rem;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    line-height: 1;
+  }
+  .panel-recent__item:hover .panel-recent__del { opacity: 1; }
+  .panel-recent__del:hover { color: var(--you-primary); }
+
+  .panel-recent__empty {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    font-style: italic;
+    padding: 0.5rem 0;
+  }
+
+  /* ═══════════ SPLIT RATIO ═══════════ */
+  .split-section {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2.5rem;
+    animation: fadeInUp 0.5s ease-out 0.5s both;
+  }
+
+  .split-section__title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .split-section__sub {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    margin-bottom: 1.75rem;
+  }
+
+  .split-slider-wrap {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .split-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .split-label {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .split-label--you { color: var(--you-primary); }
+  .split-label--them { color: var(--them-primary); }
+
+  .split-slider-track {
+    position: relative;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--border-light);
+    cursor: pointer;
+  }
+
+  .split-slider-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--you-primary), var(--you-primary));
+    transition: width 0.1s;
+  }
+  .split-slider-fill--them {
+    left: auto;
+    right: 0;
+    background: linear-gradient(90deg, var(--them-primary), var(--them-primary));
+  }
+
+  .split-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+  }
+  .split-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+    margin-top: -8px;
+    transition: transform 0.15s;
+  }
+  .split-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .split-slider::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.1); }
+
+  .split-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+  }
+
+  .split-presets {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .split-preset {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.4rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    background: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .split-preset:hover {
+    border-color: var(--ink-soft);
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .split-preset--active {
+    border-color: var(--ink);
+    color: white;
+    background: var(--ink);
+  }
+  .split-preset--active:hover {
+    background: var(--ink);
+    color: white;
+  }
+
+  /* Settlement */
+  .settlement {
+    background: var(--paper);
+    border-radius: var(--radius-sm);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1.5px solid var(--border);
+  }
+
+  .settlement__label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.75rem;
+  }
+
+  .settlement__result {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .settlement__amount {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 600;
+    display: block;
+    margin-top: 0.25rem;
+  }
+  .settlement__amount--you { color: var(--you-primary); }
+  .settlement__amount--them { color: var(--them-primary); }
+  .settlement__amount--settled { color: var(--gold); }
+
+  .settlement__breakdown {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+  }
+
+  .settlement__detail {
+    text-align: center;
+  }
+
+  .settlement__detail-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+  }
+
+  .settlement__detail-value {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+    display: block;
+  }
+
+  /* ═══════════ EXPENSE LOG ═══════════ */
+  .log-section {
+    animation: fadeInUp 0.5s ease-out 0.6s both;
+  }
+
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .log-header__title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .log-header__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .log-btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    background: white;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .log-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .log-btn--active { border-color: var(--ink); background: var(--ink); color: white; }
+
+  .log-btn--danger { border-color: var(--you-primary); color: var(--you-primary); }
+  .log-btn--danger:hover { background: var(--you-primary); color: white; }
+
+  .log-table {
+    width: 100%;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .log-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .log-table thead th {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border-light);
+    background: var(--paper);
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .log-table thead th:hover { color: var(--ink); }
+  .log-table thead th:last-child { text-align: center; width: 50px; }
+
+  .log-table tbody tr {
+    transition: background 0.15s;
+    animation: slideIn 0.25s ease-out;
+  }
+  .log-table tbody tr:hover { background: var(--paper); }
+
+  .log-table tbody td {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.9rem;
+  }
+  .log-table tbody tr:last-child td { border-bottom: none; }
+
+  .log__who {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .log__who-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .log__who-dot--you { background: var(--you-primary); }
+  .log__who-dot--them { background: var(--them-primary); }
+
+  .log__amount {
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  .log__amount--you { color: var(--you-primary); }
+  .log__amount--them { color: var(--them-primary); }
+
+  .log__date {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+
+  .log__del {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+    display: block;
+    margin: 0 auto;
+  }
+  .log__del:hover { background: var(--you-soft); color: var(--you-primary); }
+
+  .log-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .log-empty__icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.3;
+  }
+  .log-empty__text {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* ═══════════ ANIMATIONS ═══════════ */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 768px) {
+    .app { padding: 1.25rem 1rem 3rem; }
+    .header__brand { font-size: 2.5rem; }
+    .panels { grid-template-columns: 1fr; }
+    .overview { grid-template-columns: 1fr; }
+    .overview__center { padding: 1rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+    .overview__center::before, .overview__center::after { display: none; }
+    .overview__side--you { border-right: none; border-bottom: 1px solid var(--border-light); }
+    .overview__side--them { border-left: none; border-top: 1px solid var(--border-light); }
+    .split-section { padding: 1.5rem; }
+    .settlement__breakdown { flex-direction: column; gap: 0.75rem; }
+    .names-bar { gap: 1rem; }
+    .log-table { overflow-x: auto; }
+    .log-table table { min-width: 500px; }
+  }
+
+  /* ═══════════ TOAST ═══════════ */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 100px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s;
+    pointer-events: none;
+  }
+  .toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <h1 class="header__brand"><span>Spittly</span></h1>
+  </header>
+
+  <!-- Editable Names -->
+  <div class="names-bar">
+    <div class="name-edit">
+      <div class="name-edit__dot name-edit__dot--you"></div>
+      <input class="name-edit__input name-edit__input--you" type="text" id="nameYou" value="You" maxlength="16" spellcheck="false">
+    </div>
+    <span class="names-bar__ampersand">&amp;</span>
+    <div class="name-edit">
+      <div class="name-edit__dot name-edit__dot--them"></div>
+      <input class="name-edit__input name-edit__input--them" type="text" id="nameThem" value="Partner" maxlength="16" spellcheck="false">
+    </div>
+  </div>
+
+  <!-- Overview Strip -->
+  <div class="overview">
+    <div class="overview__side overview__side--you">
+      <div class="overview__label" id="overviewLabelYou">You spent</div>
+      <div class="overview__amount overview__amount--you" id="overviewAmountYou">$0.00</div>
+      <div class="overview__count" id="overviewCountYou">0 expenses</div>
+    </div>
+    <div class="overview__center">
+      <div class="overview__total-label">Combined</div>
+      <div class="overview__total-amount" id="overviewTotal">$0</div>
+    </div>
+    <div class="overview__side overview__side--them">
+      <div class="overview__label" id="overviewLabelThem">Partner spent</div>
+      <div class="overview__amount overview__amount--them" id="overviewAmountThem">$0.00</div>
+      <div class="overview__count" id="overviewCountThem">0 expenses</div>
+    </div>
+  </div>
+
+  <!-- Dual Panels -->
+  <div class="panels">
+    <!-- You panel -->
+    <div class="panel panel--you">
+      <div class="panel__header">
+        <div class="panel__icon" id="panelIconYou">Y</div>
+        <div class="panel__name" id="panelNameYou">You</div>
+      </div>
+      <div class="panel__body">
+        <form class="add-form" id="formYou" autocomplete="off">
+          <div class="add-form__row">
+            <div class="field">
+              <label class="field__label">What for</label>
+              <input class="field__input" type="text" placeholder="Groceries, dinner, etc." required id="descYou">
+            </div>
+            <div class="field">
+              <label class="field__label">Amount</label>
+              <input class="field__input field__input--amount" type="number" step="0.01" min="0.01" placeholder="0.00" required id="amtYou">
+            </div>
+          </div>
+          <button class="add-form__btn" type="submit">Add Expense</button>
+        </form>
+        <div class="panel-recent" id="recentYou">
+          <div class="panel-recent__title">Recent</div>
+          <ul class="panel-recent__list" id="recentListYou">
+            <li class="panel-recent__empty">No expenses yet</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Them panel -->
+    <div class="panel panel--them">
+      <div class="panel__header">
+        <div class="panel__icon" id="panelIconThem">P</div>
+        <div class="panel__name" id="panelNameThem">Partner</div>
+      </div>
+      <div class="panel__body">
+        <form class="add-form" id="formThem" autocomplete="off">
+          <div class="add-form__row">
+            <div class="field">
+              <label class="field__label">What for</label>
+              <input class="field__input" type="text" placeholder="Utilities, coffee, etc." required id="descThem">
+            </div>
+            <div class="field">
+              <label class="field__label">Amount</label>
+              <input class="field__input field__input--amount" type="number" step="0.01" min="0.01" placeholder="0.00" required id="amtThem">
+            </div>
+          </div>
+          <button class="add-form__btn" type="submit">Add Expense</button>
+        </form>
+        <div class="panel-recent" id="recentThem">
+          <div class="panel-recent__title">Recent</div>
+          <ul class="panel-recent__list" id="recentListThem">
+            <li class="panel-recent__empty">No expenses yet</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split Ratio -->
+  <section class="split-section">
+    <h2 class="split-section__title">Split Ratio</h2>
+    <p class="split-section__sub">Drag to adjust how expenses are shared</p>
+
+    <div class="split-slider-wrap">
+      <div class="split-labels">
+        <span class="split-label split-label--you" id="splitPctYou">50%</span>
+        <span class="split-label split-label--them" id="splitPctThem">50%</span>
+      </div>
+      <div class="split-slider-track" id="sliderTrack">
+        <div class="split-slider-fill" id="sliderFillYou" style="width:50%"></div>
+        <div class="split-slider-fill split-slider-fill--them" id="sliderFillThem" style="width:50%"></div>
+        <input class="split-slider" type="range" min="0" max="100" value="50" id="splitSlider">
+      </div>
+    </div>
+
+    <div class="split-presets" id="presets">
+      <button class="split-preset" data-val="50">50 / 50</button>
+      <button class="split-preset" data-val="60">60 / 40</button>
+      <button class="split-preset" data-val="70">70 / 30</button>
+      <button class="split-preset" data-val="40">40 / 60</button>
+      <button class="split-preset" data-val="30">30 / 70</button>
+    </div>
+
+    <div class="settlement" id="settlement">
+      <div class="settlement__label">Settlement</div>
+      <div class="settlement__result" id="settlementResult">Add some expenses to see the split</div>
+      <div class="settlement__breakdown" id="settlementBreakdown" style="display:none">
+        <div class="settlement__detail">
+          <span class="settlement__detail-label" id="breakdownLabelYou">You owe</span>
+          <span class="settlement__detail-value" id="breakdownValYou">$0.00</span>
+        </div>
+        <div class="settlement__detail">
+          <span class="settlement__detail-label">Total spent</span>
+          <span class="settlement__detail-value" id="breakdownTotal">$0.00</span>
+        </div>
+        <div class="settlement__detail">
+          <span class="settlement__detail-label" id="breakdownLabelThem">Partner owes</span>
+          <span class="settlement__detail-value" id="breakdownValThem">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Expense Log -->
+  <section class="log-section">
+    <div class="log-header">
+      <h2 class="log-header__title">Expense Log</h2>
+      <div class="log-header__actions">
+        <button class="log-btn" id="filterAll">All</button>
+        <button class="log-btn" id="filterYou">You</button>
+        <button class="log-btn" id="filterThem">Partner</button>
+        <button class="log-btn log-btn--danger" id="clearAll">Clear All</button>
+      </div>
+    </div>
+
+    <div id="logContainer">
+      <div class="log-empty">
+        <div class="log-empty__icon">&#9998;</div>
+        <div class="log-empty__text">Your shared expenses will appear here</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ─── State ─────────────────────────────────────────
+  const STORAGE_KEY = 'halves_data';
+
+  let state = loadState();
+
+  function defaultState() {
+    return {
+      nameYou: 'You',
+      nameThem: 'Partner',
+      splitPct: 50,
+      expenses: [],
+      filter: 'all'
+    };
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return { ...defaultState(), ...parsed };
+      }
+    } catch(e) {}
+    return defaultState();
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  // ─── DOM refs ──────────────────────────────────────
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  const nameYouInput = $('#nameYou');
+  const nameThemInput = $('#nameThem');
+  const formYou = $('#formYou');
+  const formThem = $('#formThem');
+  const descYou = $('#descYou');
+  const amtYou = $('#amtYou');
+  const descThem = $('#descThem');
+  const amtThem = $('#amtThem');
+  const splitSlider = $('#splitSlider');
+  const toast = $('#toast');
+
+  // ─── Init ──────────────────────────────────────────
+  nameYouInput.value = state.nameYou;
+  nameThemInput.value = state.nameThem;
+  splitSlider.value = state.splitPct;
+
+  // ─── Name changes ─────────────────────────────────
+  nameYouInput.addEventListener('input', () => {
+    state.nameYou = nameYouInput.value.trim() || 'You';
+    saveState();
+    render();
+  });
+
+  nameThemInput.addEventListener('input', () => {
+    state.nameThem = nameThemInput.value.trim() || 'Partner';
+    saveState();
+    render();
+  });
+
+  // ─── Add expenses ─────────────────────────────────
+  formYou.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addExpense('you', descYou.value.trim(), parseFloat(amtYou.value));
+    descYou.value = '';
+    amtYou.value = '';
+    descYou.focus();
+  });
+
+  formThem.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addExpense('them', descThem.value.trim(), parseFloat(amtThem.value));
+    descThem.value = '';
+    amtThem.value = '';
+    descThem.focus();
+  });
+
+  function addExpense(who, desc, amount) {
+    if (!desc || isNaN(amount) || amount <= 0) return;
+    state.expenses.push({
+      id: Date.now() + Math.random(),
+      who,
+      desc,
+      amount,
+      date: new Date().toISOString()
+    });
+    saveState();
+    render();
+    showToast(`Added $${amount.toFixed(2)} for "${desc}"`);
+  }
+
+  function removeExpense(id) {
+    state.expenses = state.expenses.filter(e => e.id !== id);
+    saveState();
+    render();
+  }
+
+  // ─── Split slider ─────────────────────────────────
+  splitSlider.addEventListener('input', () => {
+    state.splitPct = parseInt(splitSlider.value);
+    saveState();
+    render();
+  });
+
+  // Presets
+  $('#presets').addEventListener('click', (e) => {
+    const btn = e.target.closest('.split-preset');
+    if (!btn) return;
+    state.splitPct = parseInt(btn.dataset.val);
+    splitSlider.value = state.splitPct;
+    saveState();
+    render();
+  });
+
+  // ─── Filters ──────────────────────────────────────
+  $('#filterAll').addEventListener('click', () => { state.filter = 'all'; saveState(); render(); });
+  $('#filterYou').addEventListener('click', () => { state.filter = 'you'; saveState(); render(); });
+  $('#filterThem').addEventListener('click', () => { state.filter = 'them'; saveState(); render(); });
+
+  $('#clearAll').addEventListener('click', () => {
+    if (state.expenses.length === 0) return;
+    if (confirm('Clear all expenses? This cannot be undone.')) {
+      state.expenses = [];
+      saveState();
+      render();
+      showToast('All expenses cleared');
+    }
+  });
+
+  // ─── Toast ────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('toast--visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('toast--visible'), 2200);
+  }
+
+  // ─── Formatting ───────────────────────────────────
+  function fmt(n) {
+    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function fmtShort(n) {
+    if (n >= 1000) return '$' + (n/1000).toFixed(1) + 'k';
+    return '$' + Math.round(n);
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    let h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  }
+
+  // ─── Render ───────────────────────────────────────
+  function render() {
+    const ny = state.nameYou || 'You';
+    const nt = state.nameThem || 'Partner';
+    const pct = state.splitPct;
+    const pctThem = 100 - pct;
+
+    // Names in panels
+    $('#panelNameYou').textContent = ny;
+    $('#panelNameThem').textContent = nt;
+    $('#panelIconYou').textContent = ny.charAt(0).toUpperCase();
+    $('#panelIconThem').textContent = nt.charAt(0).toUpperCase();
+
+    // Filter button labels
+    $('#filterYou').textContent = ny;
+    $('#filterThem').textContent = nt;
+
+    // Totals
+    const youExpenses = state.expenses.filter(e => e.who === 'you');
+    const themExpenses = state.expenses.filter(e => e.who === 'them');
+    const totalYou = youExpenses.reduce((s, e) => s + e.amount, 0);
+    const totalThem = themExpenses.reduce((s, e) => s + e.amount, 0);
+    const totalAll = totalYou + totalThem;
+
+    // Overview
+    $('#overviewLabelYou').textContent = ny + ' spent';
+    $('#overviewLabelThem').textContent = nt + ' spent';
+    $('#overviewAmountYou').textContent = fmt(totalYou);
+    $('#overviewAmountThem').textContent = fmt(totalThem);
+    $('#overviewCountYou').textContent = youExpenses.length + (youExpenses.length === 1 ? ' expense' : ' expenses');
+    $('#overviewCountThem').textContent = themExpenses.length + (themExpenses.length === 1 ? ' expense' : ' expenses');
+    $('#overviewTotal').textContent = totalAll >= 1000 ? fmtShort(totalAll) : fmt(totalAll);
+
+    // Split slider visuals
+    $('#splitPctYou').textContent = pct + '%';
+    $('#splitPctThem').textContent = pctThem + '%';
+    $('#sliderFillYou').style.width = pct + '%';
+    $('#sliderFillThem').style.width = pctThem + '%';
+
+    // Preset active state
+    $$('.split-preset').forEach(btn => {
+      btn.classList.toggle('split-preset--active', parseInt(btn.dataset.val) === pct);
+    });
+
+    // Settlement calculation
+    // Each person's fair share of the total
+    const youOwes = totalAll * (pct / 100);     // what "you" should pay
+    const themOwes = totalAll * (pctThem / 100); // what "them" should pay
+
+    // What each person has already paid
+    // Difference: positive means you overpaid, negative means you underpaid
+    const youBalance = totalYou - youOwes;   // >0 means you overpaid
+    const themBalance = totalThem - themOwes; // >0 means them overpaid
+
+    const resultEl = $('#settlementResult');
+    const breakdownEl = $('#settlementBreakdown');
+    $('#breakdownLabelYou').textContent = ny + "'s share";
+    $('#breakdownLabelThem').textContent = nt + "'s share";
+    $('#breakdownValYou').textContent = fmt(youOwes);
+    $('#breakdownValThem').textContent = fmt(themOwes);
+    $('#breakdownTotal').textContent = fmt(totalAll);
+
+    if (totalAll === 0) {
+      resultEl.innerHTML = 'Add some expenses to see the split';
+      breakdownEl.style.display = 'none';
+    } else {
+      breakdownEl.style.display = 'flex';
+      if (Math.abs(youBalance) < 0.01) {
+        resultEl.innerHTML = `<span class="settlement__amount settlement__amount--settled">All settled!</span>`;
+      } else if (youBalance > 0) {
+        // You overpaid, them underpaid → them owes you
+        resultEl.innerHTML = `${nt} owes ${ny}<span class="settlement__amount settlement__amount--you">${fmt(youBalance)}</span>`;
+      } else {
+        // You underpaid → you owe them
+        resultEl.innerHTML = `${ny} owes ${nt}<span class="settlement__amount settlement__amount--them">${fmt(Math.abs(youBalance))}</span>`;
+      }
+    }
+
+    // Recent lists (top 5)
+    renderRecent('you', youExpenses, '#recentListYou');
+    renderRecent('them', themExpenses, '#recentListThem');
+
+    // Full log
+    renderLog();
+  }
+
+  function renderRecent(who, expenses, selector) {
+    const ul = $(selector);
+    const recent = expenses.slice().reverse().slice(0, 5);
+    if (recent.length === 0) {
+      ul.innerHTML = '<li class="panel-recent__empty">No expenses yet</li>';
+      return;
+    }
+    ul.innerHTML = recent.map(e => `
+      <li class="panel-recent__item">
+        <span class="panel-recent__desc">${escHtml(e.desc)}</span>
+        <span class="panel-recent__amt">${fmt(e.amount)}</span>
+        <button class="panel-recent__del" data-id="${e.id}" title="Remove">&times;</button>
+      </li>
+    `).join('');
+  }
+
+  function renderLog() {
+    const container = $('#logContainer');
+    let filtered = state.expenses.slice();
+    if (state.filter === 'you') filtered = filtered.filter(e => e.who === 'you');
+    if (state.filter === 'them') filtered = filtered.filter(e => e.who === 'them');
+
+    // Update filter button states
+    $$('.log-btn').forEach(b => b.classList.remove('log-btn--active'));
+    if (state.filter === 'all') $('#filterAll').classList.add('log-btn--active');
+    else if (state.filter === 'you') $('#filterYou').classList.add('log-btn--active');
+    else $('#filterThem').classList.add('log-btn--active');
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="log-empty">
+          <div class="log-empty__icon">&#9998;</div>
+          <div class="log-empty__text">Your shared expenses will appear here</div>
+        </div>`;
+      return;
+    }
+
+    const ny = state.nameYou || 'You';
+    const nt = state.nameThem || 'Partner';
+
+    const rows = filtered.slice().reverse().map(e => `
+      <tr>
+        <td>
+          <span class="log__who">
+            <span class="log__who-dot log__who-dot--${e.who}"></span>
+            ${e.who === 'you' ? escHtml(ny) : escHtml(nt)}
+          </span>
+        </td>
+        <td>${escHtml(e.desc)}</td>
+        <td><span class="log__amount log__amount--${e.who}">${fmt(e.amount)}</span></td>
+        <td><span class="log__date">${formatDate(e.date)}<br>${formatTime(e.date)}</span></td>
+        <td><button class="log__del" data-id="${e.id}" title="Remove">&times;</button></td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="log-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Who</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  // ─── Delete delegation ────────────────────────────
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-id]');
+    if (btn && (btn.classList.contains('panel-recent__del') || btn.classList.contains('log__del'))) {
+      removeExpense(parseFloat(btn.dataset.id));
+    }
+  });
+
+  // ─── Escape HTML ──────────────────────────────────
+  function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ─── Initial render ───────────────────────────────
+  render();
+
+})();
+</script>
+
+</body>
+</html>

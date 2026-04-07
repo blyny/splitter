@@ -257,6 +257,131 @@
     line-height: 1;
   }
 
+  /* ═══════════ PERIOD NAV ═══════════ */
+  .period-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.5s ease-out 0.25s both;
+  }
+
+  .period-nav__arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .period-nav__arrow:hover { border-color: var(--ink-soft); color: var(--ink); background: var(--paper); }
+  .period-nav__arrow:active { transform: scale(0.95); }
+
+  .period-nav__display {
+    text-align: center;
+    min-width: 180px;
+  }
+
+  .period-nav__month {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .period-nav__year {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+  }
+
+  .period-nav__today {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 0.25rem 0.6rem;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    background: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.25rem;
+  }
+  .period-nav__today:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .period-nav__today--hidden { visibility: hidden; }
+
+  .period-nav__toggle {
+    display: flex;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .period-nav__toggle-btn {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 0.3rem 0.7rem;
+    border: none;
+    background: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .period-nav__toggle-btn:hover { color: var(--ink-soft); }
+  .period-nav__toggle-btn--active {
+    background: var(--ink);
+    color: white;
+  }
+  .period-nav__toggle-btn--active:hover { color: white; }
+
+  .period-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .period-summary__card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .period-summary__card-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .period-summary__card-value {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
   /* ═══════════ DUAL PANELS ═══════════ */
   .panels {
     display: grid;
@@ -810,6 +935,9 @@
     .header__brand { font-size: 2.5rem; }
     .panels { grid-template-columns: 1fr; }
     .overview { grid-template-columns: 1fr; }
+    .period-summary { grid-template-columns: 1fr; }
+    .period-nav__display { min-width: 140px; }
+    .period-nav__month { font-size: 1.25rem; }
     .overview__center { padding: 1rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
     .overview__center::before, .overview__center::after { display: none; }
     .overview__side--you { border-right: none; border-bottom: 1px solid var(--border-light); }
@@ -884,6 +1012,31 @@
       <div class="overview__count" id="overviewCountThem">0 expenses</div>
     </div>
   </div>
+
+  <nav class="period-nav">
+    <div class="period-nav__toggle">
+      <button class="period-nav__toggle-btn period-nav__toggle-btn--active" id="viewMonth">Month</button>
+      <button class="period-nav__toggle-btn" id="viewYear">Year</button>
+    </div>
+    <button class="period-nav__arrow" id="prevMonth" title="Previous">&#8249;</button>
+    <div class="period-nav__display">
+      <div class="period-nav__month" id="periodMonthLabel">April</div>
+      <div class="period-nav__year" id="periodYearLabel">2026</div>
+      <button class="period-nav__today" id="periodToday">Today</button>
+    </div>
+    <button class="period-nav__arrow" id="nextMonth" title="Next">&#8250;</button>
+  </nav>
+
+  <section class="period-summary">
+    <div class="period-summary__card">
+      <div class="period-summary__card-label" id="summaryMonthLabel">This month</div>
+      <div class="period-summary__card-value" id="summaryMonthAmount">$0.00</div>
+    </div>
+    <div class="period-summary__card">
+      <div class="period-summary__card-label" id="summaryYearLabel">This year</div>
+      <div class="period-summary__card-value" id="summaryYearAmount">$0.00</div>
+    </div>
+  </section>
 
   <!-- Dual Panels -->
   <div class="panels">
@@ -993,7 +1146,7 @@
   <!-- Expense Log -->
   <section class="log-section">
     <div class="log-header">
-      <h2 class="log-header__title">Expense Log</h2>
+      <h2 class="log-header__title" id="logTitle">Expense Log</h2>
       <div class="log-header__actions">
         <button class="log-btn" id="filterAll">All</button>
           <button class="log-btn" id="filterYou">b</button>
@@ -1028,6 +1181,15 @@
 
   let state = loadState();
 
+  function getCurrentMonthValue() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function normalizeMonthValue(value) {
+    return /^\d{4}-\d{2}$/.test(value || '') ? value : getCurrentMonthValue();
+  }
+
   function defaultState() {
     return {
       nameYou: FIXED_NAME_YOU,
@@ -1035,6 +1197,8 @@
       splitPct: 50,
       expenses: [],
       filter: 'all',
+      summaryMonth: getCurrentMonthValue(),
+      viewMode: 'month',
       colorYou: DEFAULT_COLOR_YOU,
       colorThem: DEFAULT_COLOR_THEM
     };
@@ -1045,7 +1209,13 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return { ...defaultState(), ...parsed, nameYou: FIXED_NAME_YOU, nameThem: FIXED_NAME_THEM };
+        return {
+          ...defaultState(),
+          ...parsed,
+          nameYou: FIXED_NAME_YOU,
+          nameThem: FIXED_NAME_THEM,
+          summaryMonth: normalizeMonthValue(parsed.summaryMonth)
+        };
       }
     } catch(e) {}
     return defaultState();
@@ -1094,6 +1264,38 @@
     state.colorThem = colorThemInput.value;
     applyColors();
     saveState();
+  });
+
+  function shiftMonth(delta) {
+    const [y, m] = normalizeMonthValue(state.summaryMonth).split('-').map(Number);
+    if (state.viewMode === 'year') {
+      const d = new Date(y + delta, m - 1, 1);
+      state.summaryMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    } else {
+      const d = new Date(y, m - 1 + delta, 1);
+      state.summaryMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+    saveState();
+    render();
+  }
+
+  $('#prevMonth').addEventListener('click', () => shiftMonth(-1));
+  $('#nextMonth').addEventListener('click', () => shiftMonth(1));
+  $('#periodToday').addEventListener('click', () => {
+    state.summaryMonth = getCurrentMonthValue();
+    saveState();
+    render();
+  });
+
+  $('#viewMonth').addEventListener('click', () => {
+    state.viewMode = 'month';
+    saveState();
+    render();
+  });
+  $('#viewYear').addEventListener('click', () => {
+    state.viewMode = 'year';
+    saveState();
+    render();
   });
 
   function hexToRgb(hex) {
@@ -1222,12 +1424,51 @@
     return `${h}:${m} ${ampm}`;
   }
 
+  function formatMonthName(value) {
+    const [year, month] = normalizeMonthValue(value).split('-').map(Number);
+    const d = new Date(year, month - 1, 1);
+    return d.toLocaleDateString(undefined, { month: 'long' });
+  }
+
+  function formatMonthLabel(value) {
+    const [year, month] = normalizeMonthValue(value).split('-').map(Number);
+    const d = new Date(year, month - 1, 1);
+    return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  }
+
   // ─── Render ───────────────────────────────────────
   function render() {
     const ny = state.nameYou || FIXED_NAME_YOU;
     const nt = state.nameThem || FIXED_NAME_THEM;
     const pct = state.splitPct;
     const pctThem = 100 - pct;
+    const summaryMonth = normalizeMonthValue(state.summaryMonth);
+    const [summaryYear, summaryMonthNumber] = summaryMonth.split('-').map(Number);
+
+    state.summaryMonth = summaryMonth;
+    const isYearMode = state.viewMode === 'year';
+
+    // Toggle button active state
+    $('#viewMonth').classList.toggle('period-nav__toggle-btn--active', !isYearMode);
+    $('#viewYear').classList.toggle('period-nav__toggle-btn--active', isYearMode);
+
+    // Period nav display
+    if (isYearMode) {
+      $('#periodMonthLabel').textContent = String(summaryYear);
+      $('#periodYearLabel').textContent = '';
+    } else {
+      $('#periodMonthLabel').textContent = formatMonthName(summaryMonth);
+      $('#periodYearLabel').textContent = String(summaryYear);
+    }
+    const todayBtn = $('#periodToday');
+    const isCurrentPeriod = isYearMode
+      ? summaryYear === new Date().getFullYear()
+      : summaryMonth === getCurrentMonthValue();
+    if (isCurrentPeriod) {
+      todayBtn.classList.add('period-nav__today--hidden');
+    } else {
+      todayBtn.classList.remove('period-nav__today--hidden');
+    }
 
     // Names in panels
     $('#panelNameYou').textContent = ny;
@@ -1239,21 +1480,54 @@
     $('#filterYou').textContent = ny;
     $('#filterThem').textContent = nt;
 
-    // Totals
-    const youExpenses = state.expenses.filter(e => e.who === 'you');
-    const themExpenses = state.expenses.filter(e => e.who === 'them');
+    // All-time totals (for settlement)
+    const allYou = state.expenses.filter(e => e.who === 'you');
+    const allThem = state.expenses.filter(e => e.who === 'them');
+    const totalYouAll = allYou.reduce((s, e) => s + e.amount, 0);
+    const totalThemAll = allThem.reduce((s, e) => s + e.amount, 0);
+    const totalAll = totalYouAll + totalThemAll;
+
+    // Period-scoped totals (for overview strip)
+    const periodExpenses = state.expenses.filter(e => {
+      const d = new Date(e.date);
+      if (isYearMode) return d.getFullYear() === summaryYear;
+      return d.getFullYear() === summaryYear && d.getMonth() + 1 === summaryMonthNumber;
+    });
+    const youExpenses = periodExpenses.filter(e => e.who === 'you');
+    const themExpenses = periodExpenses.filter(e => e.who === 'them');
     const totalYou = youExpenses.reduce((s, e) => s + e.amount, 0);
     const totalThem = themExpenses.reduce((s, e) => s + e.amount, 0);
-    const totalAll = totalYou + totalThem;
+    const totalPeriod = totalYou + totalThem;
 
-    // Overview
+    // Overview (scoped to selected period)
     $('#overviewLabelYou').textContent = ny + ' spent';
     $('#overviewLabelThem').textContent = nt + ' spent';
     $('#overviewAmountYou').textContent = fmt(totalYou);
     $('#overviewAmountThem').textContent = fmt(totalThem);
     $('#overviewCountYou').textContent = youExpenses.length + (youExpenses.length === 1 ? ' expense' : ' expenses');
     $('#overviewCountThem').textContent = themExpenses.length + (themExpenses.length === 1 ? ' expense' : ' expenses');
-    $('#overviewTotal').textContent = totalAll >= 1000 ? fmtShort(totalAll) : fmt(totalAll);
+    $('#overviewTotal').textContent = totalPeriod >= 1000 ? fmtShort(totalPeriod) : fmt(totalPeriod);
+
+    const monthTotal = state.expenses.reduce((sum, expense) => {
+      const d = new Date(expense.date);
+      return d.getFullYear() === summaryYear && d.getMonth() + 1 === summaryMonthNumber ? sum + expense.amount : sum;
+    }, 0);
+    const yearTotal = state.expenses.reduce((sum, expense) => {
+      const d = new Date(expense.date);
+      return d.getFullYear() === summaryYear ? sum + expense.amount : sum;
+    }, 0);
+
+    if (isYearMode) {
+      $('#summaryMonthLabel').textContent = 'All-time total';
+      $('#summaryMonthAmount').textContent = fmt(totalAll);
+      $('#summaryYearLabel').textContent = summaryYear + ' total';
+      $('#summaryYearAmount').textContent = fmt(yearTotal);
+    } else {
+      $('#summaryMonthLabel').textContent = formatMonthLabel(summaryMonth);
+      $('#summaryMonthAmount').textContent = fmt(monthTotal);
+      $('#summaryYearLabel').textContent = summaryYear + ' total';
+      $('#summaryYearAmount').textContent = fmt(yearTotal);
+    }
 
     // Split slider visuals
     $('#splitPctYou').textContent = pct + '%';
@@ -1266,11 +1540,11 @@
       btn.classList.toggle('split-preset--active', parseInt(btn.dataset.val) === pct);
     });
 
-    // Settlement calculation
+    // Settlement calculation (all-time)
     const youOwes = totalAll * (pct / 100);
     const themOwes = totalAll * (pctThem / 100);
-    const youBalance = totalYou - youOwes;
-    const themBalance = totalThem - themOwes;
+    const youBalance = totalYouAll - youOwes;
+    const themBalance = totalThemAll - themOwes;
 
     const resultEl = $('#settlementResult');
     const breakdownEl = $('#settlementBreakdown');
@@ -1294,9 +1568,9 @@
       }
     }
 
-    // Recent lists (top 5)
-    renderRecent('you', youExpenses, '#recentListYou');
-    renderRecent('them', themExpenses, '#recentListThem');
+    // Recent lists (top 5, all-time)
+    renderRecent('you', allYou, '#recentListYou');
+    renderRecent('them', allThem, '#recentListThem');
 
     // Full log
     renderLog();
@@ -1320,7 +1594,23 @@
 
   function renderLog() {
     const container = $('#logContainer');
-    let filtered = state.expenses.slice();
+    const summaryMonth = normalizeMonthValue(state.summaryMonth);
+    const [sYear, sMonth] = summaryMonth.split('-').map(Number);
+    const isYearMode = state.viewMode === 'year';
+
+    // Update log header with selected period
+    $('#logTitle').textContent = isYearMode
+      ? 'Expense Log \u2014 ' + sYear
+      : 'Expense Log \u2014 ' + formatMonthLabel(summaryMonth);
+
+    // Filter by selected period first
+    let filtered = state.expenses.filter(e => {
+      const d = new Date(e.date);
+      if (isYearMode) return d.getFullYear() === sYear;
+      return d.getFullYear() === sYear && d.getMonth() + 1 === sMonth;
+    });
+
+    // Then by person filter
     if (state.filter === 'you') filtered = filtered.filter(e => e.who === 'you');
     if (state.filter === 'them') filtered = filtered.filter(e => e.who === 'them');
 

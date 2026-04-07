@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Halves — Couple's Expense Splitter</title>
+<title>Splitty Witty</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -348,39 +348,6 @@
     color: white;
   }
   .period-nav__toggle-btn--active:hover { color: white; }
-
-  .period-summary {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .period-summary__card {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.35rem;
-  }
-
-  .period-summary__card-label {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-
-  .period-summary__card-value {
-    font-family: var(--font-mono);
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
 
   /* ═══════════ DUAL PANELS ═══════════ */
   .panels {
@@ -935,7 +902,6 @@
     .header__brand { font-size: 2.5rem; }
     .panels { grid-template-columns: 1fr; }
     .overview { grid-template-columns: 1fr; }
-    .period-summary { grid-template-columns: 1fr; }
     .period-nav__display { min-width: 140px; }
     .period-nav__month { font-size: 1.25rem; }
     .overview__center { padding: 1rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
@@ -995,6 +961,20 @@
     </div>
   </div>
 
+  <nav class="period-nav">
+    <div class="period-nav__toggle">
+      <button class="period-nav__toggle-btn period-nav__toggle-btn--active" id="viewMonth">Month</button>
+      <button class="period-nav__toggle-btn" id="viewYear">Year</button>
+    </div>
+    <button class="period-nav__arrow" id="prevMonth" title="Previous">&#8249;</button>
+    <div class="period-nav__display">
+      <div class="period-nav__month" id="periodMonthLabel">April</div>
+      <div class="period-nav__year" id="periodYearLabel">2026</div>
+      <button class="period-nav__today" id="periodToday">Today</button>
+    </div>
+    <button class="period-nav__arrow" id="nextMonth" title="Next">&#8250;</button>
+  </nav>
+
   <!-- Overview Strip -->
   <div class="overview">
     <div class="overview__side overview__side--you">
@@ -1012,31 +992,6 @@
       <div class="overview__count" id="overviewCountThem">0 expenses</div>
     </div>
   </div>
-
-  <nav class="period-nav">
-    <div class="period-nav__toggle">
-      <button class="period-nav__toggle-btn period-nav__toggle-btn--active" id="viewMonth">Month</button>
-      <button class="period-nav__toggle-btn" id="viewYear">Year</button>
-    </div>
-    <button class="period-nav__arrow" id="prevMonth" title="Previous">&#8249;</button>
-    <div class="period-nav__display">
-      <div class="period-nav__month" id="periodMonthLabel">April</div>
-      <div class="period-nav__year" id="periodYearLabel">2026</div>
-      <button class="period-nav__today" id="periodToday">Today</button>
-    </div>
-    <button class="period-nav__arrow" id="nextMonth" title="Next">&#8250;</button>
-  </nav>
-
-  <section class="period-summary">
-    <div class="period-summary__card">
-      <div class="period-summary__card-label" id="summaryMonthLabel">This month</div>
-      <div class="period-summary__card-value" id="summaryMonthAmount">$0.00</div>
-    </div>
-    <div class="period-summary__card">
-      <div class="period-summary__card-label" id="summaryYearLabel">This year</div>
-      <div class="period-summary__card-value" id="summaryYearAmount">$0.00</div>
-    </div>
-  </section>
 
   <!-- Dual Panels -->
   <div class="panels">
@@ -1507,27 +1462,6 @@
     $('#overviewCountYou').textContent = youExpenses.length + (youExpenses.length === 1 ? ' expense' : ' expenses');
     $('#overviewCountThem').textContent = themExpenses.length + (themExpenses.length === 1 ? ' expense' : ' expenses');
     $('#overviewTotal').textContent = totalPeriod >= 1000 ? fmtShort(totalPeriod) : fmt(totalPeriod);
-
-    const monthTotal = state.expenses.reduce((sum, expense) => {
-      const d = new Date(expense.date);
-      return d.getFullYear() === summaryYear && d.getMonth() + 1 === summaryMonthNumber ? sum + expense.amount : sum;
-    }, 0);
-    const yearTotal = state.expenses.reduce((sum, expense) => {
-      const d = new Date(expense.date);
-      return d.getFullYear() === summaryYear ? sum + expense.amount : sum;
-    }, 0);
-
-    if (isYearMode) {
-      $('#summaryMonthLabel').textContent = 'All-time total';
-      $('#summaryMonthAmount').textContent = fmt(totalAll);
-      $('#summaryYearLabel').textContent = summaryYear + ' total';
-      $('#summaryYearAmount').textContent = fmt(yearTotal);
-    } else {
-      $('#summaryMonthLabel').textContent = formatMonthLabel(summaryMonth);
-      $('#summaryMonthAmount').textContent = fmt(monthTotal);
-      $('#summaryYearLabel').textContent = summaryYear + ' total';
-      $('#summaryYearAmount').textContent = fmt(yearTotal);
-    }
 
     // Split slider visuals
     $('#splitPctYou').textContent = pct + '%';
